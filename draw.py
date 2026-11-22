@@ -3,8 +3,8 @@
 Deterministic, no network. Writes 1024x1024 PNG to /output/entry.png
 (or ./output/entry.png when run locally).
 Layout (own design, structure only inspired by past winners):
-masthead + 3 leads + map band + 16 pictured scene cards + 33-item index + UTC timeline.
-52 stories total: 3 leads + 16 pictured + 33 briefs. 7 regions.
+masthead + big-number strip + 3 leads with large scenes + map band + 12 pictured cards + 24-item index + UTC timeline.
+39 stories total: 3 leads + 12 pictured + 24 briefs. 7 regions.
 """
 import os
 from PIL import Image, ImageDraw, ImageFont
@@ -180,38 +180,62 @@ def main():
     d.rectangle([8, 8, W-9, H-9], outline=INK, width=2)
 
     # --- masthead ---
-    d.text((512, 22), "THE WORLD IN ONE DAY", font=F_MAST, fill=INK, anchor="mt")
-    d.text((512, 78), "Sunday 22 November 2026", font=font(SANS_B, 20), fill=INK, anchor="mt")
-    d.line([24, 108, 1000, 108], fill=INK, width=2)
-    d.text((512, 114), "52 DATED STORIES  •  7 REGIONS  •  3 LEADS  •  16 PICTURED  •  ALL DATES UTC", font=F_SUB, fill=INK, anchor="mt")
-    d.text((512, 130), "LEADS: COP31  •  GULF STRIKES  •  SPARTA II  •  PERU QUAKE", font=font(SANS_B, 10), fill=GREY, anchor="mt")
+    d.text((512, 20), "THE WORLD IN ONE DAY", font=F_MAST, fill=INK, anchor="mt")
+    d.text((512, 74), "Sunday 22 November 2026", font=font(SANS_B, 20), fill=INK, anchor="mt")
+    d.line([24, 104, 1000, 104], fill=INK, width=2)
+    d.text((512, 110), "39 DATED STORIES  •  7 REGIONS  •  3 LEADS  •  12 PICTURED  •  ALL DATES UTC", font=F_SUB, fill=INK, anchor="mt")
+    d.text((512, 126), "LEADS: COP31  •  GULF STRIKES  •  SPARTA II  •  PERU QUAKE", font=font(SANS_B, 10), fill=GREY, anchor="mt")
 
-    # --- 3 leads ---
+    # --- big-number stat strip ---
+    d.line([24, 142, 1000, 142], fill=INK, width=1)
+    stats = [
+        ("400", "DRONES IN RUSSIA'S BARRAGE"),
+        ("16", "CREW OFF BURNING SPARTA II"),
+        ("152", "HOMES UNINHABITABLE IN PERU"),
+        ("340,000", "DISPLACED IN YEMEN"),
+        ("58", "HURT IN KRYVYI RIH"),
+        ("$2.4bn", "LIQUIDATED IN 24 HOURS"),
+    ]
+    _sx = 24
+    _sw = 976 // 6
+    for _num, _lab in stats:
+        d.text((_sx + _sw // 2, 148), _num, font=font(SANS_B, 30), fill=INK, anchor="mt")
+        d.text((_sx + _sw // 2, 180), _lab, font=font(SANS_B, 9), fill=GREY, anchor="mt")
+        _sx += _sw
+    for _i in range(1, 6):
+        _lx = 24 + _i * _sw
+        d.line([_lx, 148, _lx, 192], fill=(200, 200, 200), width=1)
+    d.line([24, 196, 1000, 196], fill=INK, width=1)
+
+    # --- 3 leads with large scenes ---
+    def big_icon(kind, col, vid):
+        tile = Image.new("RGB", (46, 46), col)
+        td = ImageDraw.Draw(tile)
+        icon(td, 0, 0, kind, col, vid)
+        return tile.resize((92, 92), Image.LANCZOS)
     leads = [
-        ("1  COP31 NEARS A DEAL", "◎ ANTALYA  •  22 NOV", "Negotiators in Antalya close on a new climate package after long talks. A vote is set for 06:00 GMT. The deal is near — but not done.", "sun", BLUE),
-        ("2  IRAN HITS US BASES", "◇ GULF  •  21 NOV NIGHT", "Iran says it struck four US bases in Bahrain with drones and missiles. Tankers were also hit near Hormuz. The Gulf is the day's sharpest front.", "blast", RED),
-        ("3  SPARTA II ABLAZE", "● FINLAND  •  21 NOV", "A Russian freighter, Sparta II, caught fire after a drone strike in the Gulf of Finland. All 16 crew were evacuated as the ship drifted.", "ship", TEAL),
+        ("1  COP31 NEARS A DEAL", "◎ ANTALYA  •  22 NOV", "Negotiators in Antalya close on a new climate package. A vote is set for 06:00 GMT. (Reuters)", "sun", BLUE),
+        ("2  IRAN HITS US BASES", "◇ GULF  •  21 NOV NIGHT", "Iran says it struck four US bases in Bahrain. Tankers were also hit near Hormuz. (UKMTO, Reuters)", "blast", RED),
+        ("3  SPARTA II ABLAZE", "● FINLAND  •  21 NOV", "Russian freighter Sparta II caught fire after a drone strike. All 16 crew were evacuated. (Reuters)", "ship", TEAL),
     ]
     x = 24
     for title, tag, body, kind, col in leads:
-        d.rectangle([x, 148, x+316, 152], fill=col)
-        _lead_no = title.split()[0]
-        icon(d, x, 160, kind, col, _lead_no)
-        _ty = 160
-        for _ln in wrap(d, title, F_LEAD_H, 252):
-            d.text((x+56, _ty), _ln, font=F_LEAD_H, fill=INK)
+        d.rectangle([x, 202, x+316, 206], fill=col)
+        img.paste(big_icon(kind, col, title.split()[0]), (x, 210))
+        _ty = 210
+        for _ln in wrap(d, title, F_LEAD_H, 208):
+            d.text((x+100, _ty), _ln, font=F_LEAD_H, fill=INK)
             _ty += 19
-        d.text((x+56, _ty+2), tag, font=F_DATE, fill=col)
-        para(d, x, 222, body, F_LEAD_B, 316, 15)
+        d.text((x+100, _ty+2), tag, font=F_DATE, fill=col)
+        para(d, x, 308, body, F_LEAD_B, 316, 15)
         x += 328
 
-    # --- map band ---
-    d.rectangle([24, 296, 1000, 392], fill=(232, 238, 244), outline=GREY)
-    d.rectangle([30, 300, 280, 316], fill=(232, 238, 244))
-    d.text((36, 302), "WORLD MAP — WHERE IT HAPPENED", font=F_SMALL, fill=INK)
-    # continents from lon/lat polygons (equirectangular, map box 36..860 x 308..388)
+    # --- map band (compact) ---
+    d.rectangle([24, 352, 1000, 436], fill=(232, 238, 244), outline=GREY)
+    d.text((36, 356), "WORLD MAP — WHERE IT HAPPENED", font=F_SMALL, fill=INK)
+    # continents from lon/lat polygons (equirectangular, map box 36..860 x 366..428)
     def _xy(lon, lat):
-        mx0, mx1, my0, my1 = 36, 860, 322, 390
+        mx0, mx1, my0, my1 = 36, 860, 366, 428
         x = mx0 + (lon + 170) / 360.0 * (mx1 - mx0)
         y = my0 + (75 - lat) / 130.0 * (my1 - my0)
         return (x, y)
@@ -237,16 +261,17 @@ def main():
         return _in
     _polys_xy = [[_xy(lo, la) for lo, la in _c] for _c in _conts]
     for _dx in range(44, 856, 7):
-        for _dy in range(326, 388, 7):
+        for _dy in range(372, 428, 7):
             if any(_inside(_dx, _dy, _poly) for _poly in _polys_xy):
                 d.ellipse([_dx-1, _dy-1, _dx+1, _dy+1], fill=(175, 182, 190))
     # grid lines
     for _lon in (-120, -60, 0, 60, 120):
         _x = _xy(_lon, 0)[0]
-        d.line([_x, 322, _x, 390], fill=(220, 226, 232), width=1)
+        d.line([_x, 366, _x, 428], fill=(220, 226, 232), width=1)
     # pins: (lon, lat, number, x-offset, y-offset of the circle from the true point).
     # Gulf pins (2, 6, 8) and Finland/Antalya (3, 1) are geographically close,
     # so their circles are nudged apart with a leader line to the true point.
+    # Pin 5 is Delhi (story 18, SCO forum), not the Nepal visit.
     _pins_ll = [(30.7,36.9,"1",0,-12),(50.6,26.2,"2",-16,-8),(56.5,26.5,"6",16,6),(25,59.8,"3",-24,-14),(-75,-10,"7",0,0),(77.2,28.6,"5",0,-10),(-107,25,"4",0,0),(47.8,30.5,"8",-20,14)]
     for lo, la, n, ox, oy in _pins_ll:
         _tx, _ty = _xy(lo, la)
@@ -256,41 +281,36 @@ def main():
             d.line([_tx, _ty, px, py], fill=GREY, width=1)
         d.ellipse([px-9, py-9, px+9, py+9], fill=RED, outline=(255, 255, 255), width=2)
         d.text((px, py-7), n, font=font(SANS_B, 11), fill=(255, 255, 255), anchor="mt")
-    d.text((110, 340), "AMERICAS", font=F_TINY, fill=GREY)
-    d.text((470, 312), "EUROPE", font=F_TINY, fill=GREY)
-    d.text((470, 368), "AFRICA", font=F_TINY, fill=GREY)
-    d.text((640, 318), "ASIA", font=F_TINY, fill=GREY)
-    d.text((880, 302), "1 Antalya  2 Bahrain", font=F_TINY, fill=INK)
-    d.text((880, 316), "3 Finland  4 Sinaloa", font=F_TINY, fill=INK)
-    d.text((880, 330), "5 Delhi  6 Hormuz", font=F_TINY, fill=INK)
-    d.text((880, 344), "7 Peru  8 Basra", font=F_TINY, fill=INK)
-    d.text((36, 372), "Pins match the numbered stories below. Numbers are story numbers, not ranks.", font=F_TINY, fill=GREY)
+    d.text((110, 384), "AMERICAS", font=F_TINY, fill=GREY)
+    d.text((478, 354), "EUROPE", font=F_TINY, fill=GREY)
+    d.text((470, 408), "AFRICA", font=F_TINY, fill=GREY)
+    d.text((640, 362), "ASIA", font=F_TINY, fill=GREY)
+    d.text((880, 356), "1 Antalya  2 Bahrain", font=F_TINY, fill=INK)
+    d.text((880, 370), "3 Finland  4 Sinaloa", font=F_TINY, fill=INK)
+    d.text((880, 384), "5 Delhi  6 Hormuz", font=F_TINY, fill=INK)
+    d.text((880, 398), "7 Peru  8 Basra", font=F_TINY, fill=INK)
 
-    # --- 12 pictured cards ---
+    # --- 12 pictured cards (3 rows x 4) ---
     cards = [
-        ("3", "TANKERS HIT AT HORMUZ", "Three tankers attacked; two hits confirmed.", "● 21 NOV", "ship", RED),
-        ("4", "HOUTHIS FIRE AT RIYADH", "Three ballistic missiles intercepted by Saudi-led forces.", "● 21 NOV", "missile", RED),
-        ("5", "GAZA FLOOD AID CALL", "Australia, Canada, Italy and UK press Israel for access.", "◎ 22 NOV", "drop", TEAL),
-        ("6", "ISRAEL: EISENKOT ASKED", "President turns to Eisenkot to form a government.", "◎ 22 NOV", "star", BLUE),
-        ("15", "NEPAL PM IN DELHI", "Shah on a state visit; meets Modi on 23 Nov.", "● 22 NOV", "mount", TEAL),
-        ("17", "PERU QUAKE: AFTERMATH", "152 homes uninhabitable after the M6.8 quake.", "● 22 NOV", "mount", GOLD),
-        ("21", "EL CHAPO ISIDRO HELD", "Mexico arrests FBI most-wanted capo; 11 dead in raid.", "● 20-21 NOV", "cuff", RED),
-        ("26", "LAS VEGAS GP: POLE", "Antonelli fastest, drops 5 places; Verstappen on pole.", "● 22 NOV", "flag", BLUE),
-        ("31", "BITCOIN BELOW $57,000", "Two-year low; $2.4bn liquidated in 24 hours.", "● 21 NOV", "coin", GOLD),
-        ("32", "NVIDIA -14% ON PROBE", "Shares fall to $125.53 on SEC accounting report.", "◎ 20 NOV", "chip", BLUE),
-        ("33", "VOYAGER 1, ONE LIGHT-DAY", "Farthest human object reaches a light-day from Earth.", "● 18-19 NOV", "star", TEAL),
-        ("35", "ATP FINAL IN TURIN", "Final at 18:00 CET in Turin. Zverev beat Medvedev.", "◎ 22 NOV", "ball", GOLD),
-        ("36", "BASRA POWER FIRE", "Hartha station fire kills 4, injures 30.", "● 21 NOV", "blast", RED),
-        ("37", "TRUMP-XI-PUTIN SUMMIT", "Shenzhen 4-point declaration, no Ukraine.", "◎ 19 NOV", "star", BLUE),
-        ("38", "ROVNO ENERGY HIT", "Russia strikes substation in Rovno region.", "● 21 NOV", "missile", RED),
-        ("40", "GAZA STRIKES KILL 7", "Strikes kill 7, 350,000 families homeless.", "◎ 21 NOV", "blast", TEAL),
+        ("3", "TANKERS HIT AT HORMUZ", "Three tankers attacked; two hits confirmed.", "● 21 NOV · UKMTO", "ship", RED),
+        ("4", "HOUTHIS FIRE AT RIYADH", "Three ballistic missiles intercepted by Saudi-led forces.", "● 21 NOV · REUTERS", "missile", RED),
+        ("5", "GAZA FLOOD AID CALL", "Australia, Canada, Italy and UK press Israel for access.", "◎ 22 NOV · REUTERS", "drop", TEAL),
+        ("17", "PERU QUAKE: AFTERMATH", "152 homes uninhabitable after the M6.8 quake.", "● 22 NOV · USGS", "mount", GOLD),
+        ("21", "EL CHAPO ISIDRO HELD", "Mexico arrests FBI most-wanted capo; 11 dead in raid.", "● 20-21 NOV · FBI", "cuff", RED),
+        ("26", "LAS VEGAS GP: POLE", "Antonelli fastest, drops 5 places; Verstappen on pole.", "● 22 NOV · F1", "flag", BLUE),
+        ("31", "BITCOIN BELOW $57,000", "Two-year low; $2.4bn liquidated in 24 hours.", "● 21 NOV · REUTERS", "coin", GOLD),
+        ("32", "NVIDIA -14% ON PROBE", "Shares fall to $125.53 on SEC accounting report.", "◎ 20 NOV · SEC", "chip", BLUE),
+        ("33", "VOYAGER 1, ONE LIGHT-DAY", "Farthest human object reaches a light-day from Earth.", "● 18-19 NOV · NASA", "star", TEAL),
+        ("36", "BASRA POWER FIRE", "Hartha station fire kills 4, injures 30.", "● 21 NOV · REUTERS", "blast", RED),
+        ("37", "TRUMP-XI-PUTIN SUMMIT", "Shenzhen 4-point declaration, no Ukraine.", "◎ 19 NOV · REUTERS", "star", BLUE),
+        ("40", "GAZA STRIKES KILL 7", "Strikes kill 7, 350,000 families homeless.", "◎ 21 NOV · AL JAZEERA", "blast", TEAL),
     ]
-    y = 400
-    for row in range(4):
+    y = 444
+    for row in range(3):
         x = 24
         for col_i in range(4):
             n, title, body, tag, kind, col = cards[row*4+col_i]
-            d.rectangle([x, y, x+236, y+82], outline=GREY, width=1)
+            d.rectangle([x, y, x+236, y+96], outline=GREY, width=1)
             d.rectangle([x, y, x+236, y+4], fill=col)
             icon(d, x+8, y+8, kind, col, n)
             _ty2 = y+8
@@ -298,16 +318,16 @@ def main():
                 d.text((x+62, _ty2), _ln, font=F_CARD_H, fill=INK)
                 _ty2 += 15
             para(d, x+62, y+38, body, F_CARD_B, 166, 12)
-            d.text((x+8, y+66), tag, font=F_DATE, fill=col)
+            d.text((x+8, y+78), tag, font=F_DATE, fill=col)
             x += 244
-        y += 90
+        y += 104
 
-    # --- bottom: index (33 briefs) + UTC timeline ---
+    # --- bottom: index (24 briefs) + UTC timeline ---
     # Briefs are 10pt, one line each, no date suffix on 22 Nov stories
     # (the edition date); earlier events carry their own date.
-    d.line([24, 758, 1000, 758], fill=INK, width=2)
-    d.text((24, 766), "THE OTHER 33 STORIES — BRIEFS", font=F_SMALL, fill=INK)
-    d.text((640, 766), "THE DAY IN UTC", font=F_SMALL, fill=INK)
+    d.line([24, 764, 1000, 764], fill=INK, width=2)
+    d.text((24, 770), "THE OTHER 24 STORIES — BRIEFS", font=F_SMALL, fill=INK)
+    d.text((640, 770), "THE DAY IN UTC", font=F_SMALL, fill=INK)
     briefs_l = [
         "◎ 8  Finland heli breach 21 Nov",
         "● 9  Norway voids oil licences",
@@ -317,62 +337,53 @@ def main():
         "● 13  Kryvyi Rih: 58 hurt 21 Nov",
         "◎ 14  NATO: defend all of Poland",
         "◎ 16  Rohingya: France seeks UN 19",
-        "● 18  SCO forum in Delhi",
-        "◎ 43  Sudan drone strikes",
-        "◎ 44  Afghanistan: $18m winter aid",
     ]
     briefs_r = [
         "◎ 19  Taiwan readies for drone war",
         "● 20  APEC summit, Shenzhen 18-19",
         "● 22  Virginia measles death 20 Nov",
-        "◎ 23  US: Venezuela $12bn",
         "◎ 24  Hegseth memo limits Canada",
-        "◎ 25  US Senate Dem test",
         "● 27  Nigeria boat: 24 found 21-22",
         "◇ 28  Al-Shabaab Somalia ambush",
         "● 29  Kenya Ebola out; DRC 5,300+",
-        "◎ 45  DR Congo Ebola persists",
-        "◎ 46  Yemen: 340,000 displaced",
+        "◎ 39  EU/UK condemn Poland 21 Nov",
     ]
     briefs_m = [
-        "◎ 30  Sahel resumes talks",
-        "◎ 34  UN killer-robot talks",
-        "◎ 39  EU/UK condemn Poland 21 Nov",
         "◇ 41  Iran F-16 hit, US denies 21 Nov",
-        "● 42  France protests ease 21 Nov",
+        "◎ 43  Sudan drone strikes",
+        "◎ 44  Afghanistan: $18m winter aid",
+        "◎ 45  DR Congo Ebola persists",
+        "◎ 46  Yemen: 340,000 displaced",
         "◎ 47  Gaza: UN calls crossings open",
-        "◎ 48  S. Korea: faster AI urged 21 Nov",
         "● 49  Indonesia train crash 21 Nov",
-        "● 50  Israel tear gas protests 21 Nov",
-        "◎ 51  Trump praises Nvidia chief 21 Nov",
         "◎ 52  Iran: reopen Hormuz offer 21 Nov",
     ]
     _fb = font(SANS, 10)
-    yy = 776
+    yy = 782
     for b in briefs_l:
         d.text((24, yy), b, font=_fb, fill=INK)
         yy += 15
-    yy = 776
+    yy = 782
     for b in briefs_r:
         d.text((224, yy), b, font=_fb, fill=INK)
         yy += 15
-    yy = 776
+    yy = 782
     for b in briefs_m:
         d.text((424, yy), b, font=_fb, fill=INK)
         yy += 15
     # timeline on right
-    d.line([660, 788, 660, 916], fill=GREY, width=2)
+    d.line([660, 794, 660, 922], fill=GREY, width=2)
     tl = [("00:09", "Peru quake, UTC time"), ("02:48", "Gaza aid call"), ("04:00", "Las Vegas GP final (UTC)"), ("06:00", "COP31 vote due"), ("17:00", "ATP final (18:00 CET)")]
-    yy = 776
+    yy = 782
     for t, label in tl:
         d.ellipse([654, yy+3, 666, yy+15], fill=RED)
         d.text((674, yy), t, font=font(SANS_B, 11), fill=INK)
         d.text((730, yy), label, font=F_IDX, fill=INK)
         yy += 26
-    d.text((640, 910), "COUNT: 3 + 16 + 33 = 52", font=F_SMALL, fill=INK)
-    d.text((24, 948), "LEGEND:  ● = CONFIRMED (multiple reports)    ◎ = REPORTED (official / single source)    ◇ = CLAIM (one side claims, not verified)  —  ALL 52 MARKED", font=font(SANS_B, 10), fill=INK)
+    d.text((640, 920), "COUNT: 3 + 12 + 24 = 39", font=F_SMALL, fill=INK)
+    d.text((24, 948), "LEGEND:  ● = CONFIRMED (multiple reports)    ◎ = REPORTED (official / single source)    ◇ = CLAIM (one side claims, not verified)  —  ALL 39 MARKED", font=font(SANS_B, 10), fill=INK)
     d.text((24, 964), "DATE CHECK: 22 Nov = reported / updated on 22 Nov UTC. No date = 22 Nov; earlier events carry their own date — nothing from 21 Nov is presented as 22 Nov.", font=F_TINY, fill=GREY)
-    d.text((24, 978), "Headlines written for this edition. Each story carries its event/report date in UTC. No image or text copied from other entries.", font=F_TINY, fill=GREY)
+    d.text((24, 978), "Headlines written for this edition. Sources: Reuters, UKMTO, Al Jazeera, USGS, F1, NASA, SEC, FBI. Each story carries its event/report date in UTC. No image or text copied from other entries.", font=F_TINY, fill=GREY)
     d.text((24, 992), "THE WORLD IN ONE DAY  •  22 NOVEMBER 2026  •  1024 x 1024", font=F_TINY, fill=GREY)
 
     os.makedirs(os.path.dirname(OUT) if os.path.dirname(OUT) else ".", exist_ok=True)
@@ -381,6 +392,7 @@ def main():
     if OUT != LOCAL_OUT:
         os.makedirs("output", exist_ok=True)
         img.save(LOCAL_OUT, format="PNG", optimize=True)
+
 
 if __name__ == "__main__":
     main()
