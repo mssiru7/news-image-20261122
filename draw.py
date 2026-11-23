@@ -5,6 +5,10 @@ Deterministic, no network. Writes 1024x1024 PNG to /output/entry.png
 Layout (own design, structure only inspired by past winners):
 masthead + big-number strip + 3 leads with large scenes + map band + 12 pictured cards + 30-item index + UTC timeline.
 45 stories total: 3 leads + 12 pictured + 30 briefs. 7 regions.
+v6: swapped 6 weak/old briefs for #1-referenced, independently verified stories
+(Manipur liquor toll, Cikande fire, Belgian flights halt, SCO forum, Estonia border,
+Iran power rationing). China's spaceplane return NOT verified (4th Shenlong mission
+still in orbit) — not added.
 """
 import os
 from PIL import Image, ImageDraw, ImageFont
@@ -308,7 +312,7 @@ def main():
     # Gulf pins (2, 6, 8) and Finland/Antalya (3, 1) are geographically close,
     # so their circles are nudged apart with a leader line to the true point.
     # Pin 5 is Delhi (story 18, SCO forum), not the Nepal visit.
-    _pins_ll = [(30.7,36.9,"1",0,-12),(50.6,26.2,"2",-16,-8),(56.5,26.5,"6",16,6),(25,59.8,"3",-24,-14),(-75,-10,"7",0,0),(77.2,28.6,"5",0,-10),(-107,25,"4",0,0)]
+    _pins_ll = [(30.7,36.9,"1",0,-12),(50.6,26.2,"2",-16,-8),(56.5,26.5,"6",16,6),(25,59.8,"3",-24,-14),(-75,-10,"7",0,0),(77.2,28.6,"5",0,-10),(-107,25,"4",0,0),(106.3,-6.4,"9",0,0)]
     for lo, la, n, ox, oy in _pins_ll:
         _tx, _ty = _xy(lo, la)
         px, py = _tx + ox, _ty + oy
@@ -325,6 +329,7 @@ def main():
     d.text((880, 370), "3 Finland  4 Sinaloa", font=F_TINY, fill=INK)
     d.text((880, 384), "5 Delhi  6 Hormuz", font=F_TINY, fill=INK)
     d.text((880, 398), "7 Peru", font=F_TINY, fill=INK)
+    d.text((880, 412), "9 Cikande", font=F_TINY, fill=INK)
 
     # --- 12 pictured cards (3 rows x 4) ---
     cards = [
@@ -365,9 +370,7 @@ def main():
     d.text((24, 770), "THE OTHER 30 STORIES — BRIEFS", font=F_SMALL, fill=INK)
     d.text((640, 770), "THE DAY IN UTC", font=F_SMALL, fill=INK)
     briefs_l = [
-        "◎ 8  Finland heli breach 21 Nov",
         "● 9  Norway voids oil licences",
-        "● 10  EU-Indonesia pact 21 Nov",
         "● 11  Denmark expels attache",
         "● 12  Russia: 400 drones 20 Nov",
         "● 13  Kryvyi Rih: 58 hurt 21 Nov",
@@ -375,18 +378,20 @@ def main():
         "◎ 16  Rohingya: France seeks UN 19",
         "● 53  Hong Kong election: 723 win",
         "● 54  India declare 720/9 in NZ",
+        "● 59  Manipur liquor toll reaches 19",
+        "◎ 63  Iran rations power from today",
     ]
     briefs_r = [
         "◎ 19  Taiwan readies for drone war",
-        "● 20  APEC summit, Shenzhen 18-19",
-        "● 22  Virginia measles death 20 Nov",
-        "◎ 24  Hegseth memo limits Canada",
         "● 27  Nigeria boat: 24 found 21-22",
         "◇ 28  Al-Shabaab Somalia ambush",
         "● 29  Kenya Ebola out; DRC 5,300+",
         "◎ 39  EU/UK condemn Poland 21 Nov",
         "● 55  Wembanyama scores 50 in win",
         "● 56  Bolsonaro stable in ICU 21 Nov",
+        "◎ 61  Belgium flights halted Mon",
+        "◎ 18  SCO forum meets in Delhi",
+        "◎ 62  Estonia shuts border 20 Nov",
     ]
     briefs_m = [
         "◇ 41  Iran F-16 hit, US denies 21 Nov",
@@ -395,10 +400,10 @@ def main():
         "◎ 45  DR Congo Ebola persists",
         "◎ 46  Yemen: 340,000 displaced",
         "◎ 47  Gaza: UN calls crossings open",
-        "● 49  Indonesia train crash 21 Nov",
         "◎ 52  Iran: reopen Hormuz offer 21 Nov",
         "◎ 57  FBI probes NCIC hack 21 Nov",
         "● 58  Russia fires 186 drones",
+        "● 60  Cikande fire kills 3, 36 missing",
     ]
     _fb = font(SANS, 10)
     yy = 782
